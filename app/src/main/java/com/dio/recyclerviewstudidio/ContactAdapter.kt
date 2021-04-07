@@ -24,6 +24,13 @@ class ContactAdapter : RecyclerView.Adapter<ContactAdapter.ContactAdaptViewHolde
         holder.bind(list[position])
     }
 
+    fun updateList(list: List<Contact>){
+        this.list.clear()
+        this.list.addAll(list)
+        notifyDataSetChanged()
+    }
+
+
     class ContactAdaptViewHolder(ItemView: View) : RecyclerView.ViewHolder(ItemView) {
         private val tvName: TextView = itemView.findViewById(R.id.tv_name)
         private val tvPhone: TextView = itemView.findViewById(R.id.tv_phone)
