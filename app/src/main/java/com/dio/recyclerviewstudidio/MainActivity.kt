@@ -1,5 +1,8 @@
 package com.dio.recyclerviewstudidio
 
+import android.content.Context
+import android.content.Intent
+import android.content.SharedPreferences
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.Menu
@@ -12,22 +15,49 @@ import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.dio.recyclerviewstudidio.DetailAcvity.Companion.EXTRA_CONTACT
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
+import androidx.core.content.edit as edit
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), ClickItemContactListener {
     private val rv_list: RecyclerView by lazy {
         findViewById<RecyclerView>(R.id.rv_list)
     }
-    private val adapter = ContactAdapter()
+    private val adapter = ContactAdapter(this)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.drawer_menu)
 
         initDrawer()
+        fetchListContact()
         bindViews()
-        updatelist()
+
     }
 
+
+    private fun fetchListContact(){
+        val list = arrayListOf(
+            Contact(
+                "Rafaela Pereira",
+                "(99)7777-7777",
+                "img.png"
+            ),
+            Contact(
+                "Octavio Portugal",
+                "(99)8888-8888",
+                "img.png"
+            )
+        )
+        getInstanceSharedPreferences().edit {
+            putString("contacts", Gson().toJson(list))
+        }
+    }
+
+    private fun getInstanceSharedPreferences(): SharedPreferences{
+        return getSharedPreferences("br.com.recyclerviewstudiodio.PREFERENCES", Context.MODE_PRIVATE)
+    }
 
     private fun initDrawer(){
         val drawerLayout = findViewById<View>(R.id.drawer_layout) as DrawerLayout
@@ -42,23 +72,18 @@ class MainActivity : AppCompatActivity() {
     private fun bindViews() {
         rv_list.adapter = adapter
         rv_list.layoutManager = LinearLayoutManager(this)
+        updatelist()
+    }
+
+    private fun getListContacts(): List<Contact>{
+        val list = getInstanceSharedPreferences().getString("contacts", "[]")
+        val turnsType = object : TypeToken<List<Contact>>() {}.type
+        return Gson().fromJson(list, turnsType)
     }
 
     private fun updatelist() {
-        adapter.updateList(
-            arrayListOf(
-                Contact(
-                    "Octavio Portugal",
-                    "(99)8888-8888",
-                    "img.png"
-                ),
-                Contact(
-                    "Octavio Portugal",
-                    "(99)8888-8888",
-                    "img.png"
-                )
-            )
-        )
+        adapter.updateList(getListContacts())
+
     }
 
     private fun showToas(message: String) {
@@ -83,5 +108,11 @@ class MainActivity : AppCompatActivity() {
             }
             else -> super.onOptionsItemSelected(item)
         }
+    }
+
+    override fun clickItemContact(contact: Contact) {
+        val intent = Intent(this, DetailAcvity::class.java)
+        intent.putExtra(EXTRA_CONTACT, contact)
+        startActivity(intent)
     }
 }
